@@ -86,7 +86,7 @@ impl RpcClient {
 
         let rpc_request: RpcRequest<R> = RpcRequest::new(method.to_string(), request);
         let rpc_response: RpcResponse<T> = self.handler.send(Method::POST, url, Some(&rpc_request)).await?;
-
+        // dbg!(&rpc_response);
         Ok(rpc_response.result)
     }
 

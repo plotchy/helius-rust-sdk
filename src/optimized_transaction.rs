@@ -536,10 +536,10 @@ impl Helius {
             &[&fee_payer],
             recent_blockhash,
         );
-
+        println!("1.1");
         let serialized_tx: Vec<u8> = serialize(&transaction).map_err(|e| HeliusError::InvalidInput(e.to_string()))?;
         let transaction_base58: String = encode(&serialized_tx).into_string();
-
+        println!("{}", transaction_base58);
         let priority_fee_request: GetPriorityFeeEstimateRequest = GetPriorityFeeEstimateRequest {
             transaction: Some(transaction_base58),
             account_keys: None,
@@ -548,16 +548,17 @@ impl Helius {
                 ..Default::default()
             }),
         };
-
+        println!("1.2");
         let priority_fee_estimate: GetPriorityFeeEstimateResponse =
             self.rpc().get_priority_fee_estimate(priority_fee_request).await?;
+        println!("1.3");
         let priority_fee_recommendation: u64 =
             priority_fee_estimate
                 .priority_fee_estimate
                 .ok_or(HeliusError::InvalidInput(
                     "Priority fee estimate not available".to_string(),
                 ))? as u64;
-
+        println!("2");
         let priority_fee: u64 = if let Some(provided_fee) = create_config.priority_fee_cap {
             std::cmp::min(priority_fee_recommendation, provided_fee)
         } else {
@@ -570,7 +571,7 @@ impl Helius {
         // Get optimal compute units
         let mut test_instructions: Vec<Instruction> = final_instructions.clone();
         test_instructions.extend(create_config.instructions.clone());
-
+        println!("3");
         let units: Option<u64> = self
             .get_compute_units_thread_safe(
                 test_instructions,
@@ -579,7 +580,7 @@ impl Helius {
                 Some(&[&fee_payer]),
             )
             .await?;
-
+        println!("4");
         let compute_units: u64 = units.ok_or(HeliusError::InvalidInput(
             "Error fetching compute units for the instructions provided".to_string(),
         ))?;
@@ -589,10 +590,10 @@ impl Helius {
         } else {
             (compute_units as f64 * 1.1).ceil() as u32
         };
-
+        println!("5");
         final_instructions.push(ComputeBudgetInstruction::set_compute_unit_limit(customers_cu));
         final_instructions.extend(create_config.instructions.clone());
-
+        // dbg!(&final_instructions);
         // Create the final transaction
         let transaction: SmartTransaction = if let Some(lookup_tables) = &create_config.lookup_tables {
             let message: v0::Message = v0::Message::try_compile(
@@ -629,7 +630,7 @@ impl Helius {
 
             SmartTransaction::Legacy(tx)
         };
-
+        println!("6");
         Ok((transaction, last_valid_block_hash))
     }
 

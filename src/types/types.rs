@@ -365,7 +365,7 @@ pub struct Asset {
     pub supply: Option<Supply>,
     pub mutable: bool,
     pub burnt: bool,
-    pub mint_extensions: Option<Value>,
+    pub mint_extensions: Option<MintExtensions>,
     pub token_info: Option<TokenInfo>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub group_definition: Option<GroupDefinition>,
@@ -386,23 +386,23 @@ pub struct AssetError {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
+// #[serde(rename_all = "camelCase")]
 pub struct MintExtensions {
     pub confidential_transfer_mint: Option<ConfidentialTransferMint>,
     pub confidential_transfer_fee_config: Option<ConfidentialTransferFeeConfig>,
     pub transfer_fee_config: Option<TransferFeeConfig>,
     pub metadata_pointer: MetadataPointer,
-    pub mint_close_authority: MintCloseAuthority,
-    pub permanent_delegate: PermanentDelegate,
-    pub transfer_hook: TransferHook,
-    pub interest_bearing_config: InterestBearingConfig,
-    pub default_account_state: DefaultAccountState,
-    pub confidential_transfer_account: ConfidentialTransferAccount,
-    pub metadata: MintExtensionMetadata,
+    pub mint_close_authority: Option<MintCloseAuthority>,
+    pub permanent_delegate: Option<PermanentDelegate>,
+    pub transfer_hook: Option<TransferHook>,
+    pub interest_bearing_config: Option<InterestBearingConfig>,
+    pub default_account_state: Option<DefaultAccountState>,
+    pub confidential_transfer_account: Option<ConfidentialTransferAccount>,
+    pub metadata: Option<MintExtensionMetadata>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
+// #[serde(rename_all = "camelCase")]
 pub struct ConfidentialTransferMint {
     pub authority: String,
     pub auto_approve_new_accounts: bool,
@@ -410,7 +410,7 @@ pub struct ConfidentialTransferMint {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
+// #[serde(rename_all = "camelCase")]
 pub struct ConfidentialTransferFeeConfig {
     pub authority: String,
     pub withdraw_withheld_authority_elgamal_pubkey: String,
@@ -418,38 +418,40 @@ pub struct ConfidentialTransferFeeConfig {
     pub withheld_amount: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Serialize, Deserialize, Debug, Default)]
+// #[serde(rename_all = "camelCase")]
 pub struct TransferFeeConfig {
     pub transfer_fee_config_authority: String,
     pub withdraw_withheld_authority: String,
-    pub withheld_amount: i32,
+    pub withheld_amount: u64,
     pub older_transfer_fee: OlderTransferFee,
-    pub new_transfer_fee: NewTransferFee,
+    pub newer_transfer_fee: NewTransferFee,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Serialize, Deserialize, Debug, Default)]
+// #[serde(rename_all = "camelCase")]
 pub struct OlderTransferFee {
-    pub epoch: String,
-    pub maximum_fee: String,
-    pub transfer_fee_basis_points: String,
+    pub epoch: u64,
+    pub maximum_fee: u64,
+    pub transfer_fee_basis_points: u64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, Default)]
 pub struct NewTransferFee {
-    pub epoch: String,
+    pub epoch: u64,
+    pub maximum_fee: u64,
+    pub transfer_fee_basis_points: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MetadataPointer {
     pub authority: String,
-    #[serde(rename = "metadataAddress")]
+    // #[serde(rename = "metadataAddress")]
     pub metadata_address: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
+// #[serde(rename_all = "camelCase")]
 pub struct MintCloseAuthority {
     pub close_authority: String,
 }
@@ -500,14 +502,14 @@ pub struct ConfidentialTransferAccount {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MintExtensionMetadata {
-    #[serde(rename = "updateAuthority")]
+    // #[serde(rename = "updateAuthority")]
     pub update_authority: String,
     pub mint: String,
     pub name: String,
     pub symbol: String,
     pub uri: String,
-    #[serde(rename = "additionalMetadata")]
-    pub additional_metadata: AdditionalMetadata,
+    // #[serde(rename = "additionalMetadata")]
+    pub additional_metadata: Vec<AdditionalMetadata>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -516,7 +518,7 @@ pub struct AdditionalMetadata {
     pub value: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct TokenInfo {
     pub symbol: Option<String>,
     pub balance: Option<u64>,
@@ -529,7 +531,7 @@ pub struct TokenInfo {
     pub freeze_authority: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct PriceInfo {
     pub price_per_token: f32,
     pub currency: String,
@@ -539,12 +541,12 @@ pub struct PriceInfo {
 pub struct Inscription {
     pub order: i32,
     pub size: i32,
-    #[serde(rename = "contentType")]
+    // #[serde(rename = "contentType")]
     pub content_type: String,
     pub encoding: String,
-    #[serde(rename = "validationHash")]
+    // #[serde(rename = "validationHash")]
     pub validation_hash: String,
-    #[serde(rename = "inscriptionDataAccount")]
+    // #[serde(rename = "inscriptionDataAccount")]
     pub inscription_data_account: String,
     pub authority: String,
 }

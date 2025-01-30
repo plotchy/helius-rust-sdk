@@ -308,7 +308,7 @@ impl Helius {
             &Pubkey::from_str(random_tip_account).unwrap(),
             tip,
         ));
-
+        println!("1");
         // Create transaction and convert to base58
         let (transaction, _) = self.create_smart_transaction_with_seeds(&create_config).await?;
         let serialized_tx = match &transaction {
@@ -316,6 +316,7 @@ impl Helius {
             SmartTransaction::Versioned(tx) => serialize(tx).map_err(|e| HeliusError::InvalidInput(e.to_string()))?,
         };
         let tx_base58: String = encode(&serialized_tx).into_string();
+        println!("10");
 
         // Send via Jito
         let jito_region: &str = *JITO_API_URLS
