@@ -429,23 +429,24 @@ pub struct TransferFeeConfig {
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]
-// #[serde(rename_all = "camelCase")]
 pub struct OlderTransferFee {
     pub epoch: u64,
-    pub maximum_fee: u64,
+    #[serde(deserialize_with = "deserialize_number_or_string")]
+    pub maximum_fee: String,
     pub transfer_fee_basis_points: u64,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]
 pub struct NewTransferFee {
     pub epoch: u64,
-    pub maximum_fee: u64,
+    #[serde(deserialize_with = "deserialize_number_or_string")]
+    pub maximum_fee: String,
     pub transfer_fee_basis_points: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MetadataPointer {
-    pub authority: String,
+    pub authority: Option<String>,
     // #[serde(rename = "metadataAddress")]
     pub metadata_address: String,
 }
@@ -469,7 +470,7 @@ pub struct TransferHook {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
+// #[serde(rename_all = "camelCase")]
 pub struct InterestBearingConfig {
     pub rate_authority: String,
     pub initialization_timestamp: i32,
@@ -484,7 +485,7 @@ pub struct DefaultAccountState {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
+// #[serde(rename_all = "camelCase")]
 pub struct ConfidentialTransferAccount {
     pub approved: bool,
     pub elgamal_pubkey: String,
@@ -600,7 +601,7 @@ pub struct Links {
     pub animation_url: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Authorities {
     pub address: String,
     pub scopes: Vec<Scope>,
@@ -672,7 +673,7 @@ pub struct Uses {
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
-#[serde(rename_all = "camelCase")]
+// #[serde(rename_all = "camelCase")]
 pub struct Supply {
     pub print_max_supply: Option<u64>,
     pub print_current_supply: Option<u64>,
@@ -690,7 +691,7 @@ pub struct GroupDefinition {
     pub group_value: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub size: Option<u64>,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, default)]
     pub asset_id: Vec<u8>,
 }
 
@@ -986,5 +987,20 @@ impl CreateSmartTransactionSeedConfig {
     pub fn with_lookup_tables(mut self, lookup_tables: Vec<AddressLookupTableAccount>) -> Self {
         self.lookup_tables = Some(lookup_tables);
         self
+    }
+}
+
+fn deserialize_number_or_string<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de::Error;
+    use serde_json::Value;
+
+    let value = Value::deserialize(deserializer)?;
+    match value {
+        Value::String(s) => Ok(s),
+        Value::Number(n) => Ok(n.to_string()),
+        _ => Err(Error::custom("expected number or string")),
     }
 }
